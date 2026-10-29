@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAID BELIM | Creative Portfolio</title>
+<meta name="description" content="Zaid Belim — Video Editor, VFX Artist and CGI Creator. Explore creative projects and visual stories.">
+
+<style>
+:root {
+  --bg: #090a09;
+  --panel: #131513;
+  --text: #f4f5ef;
+  --muted: #9a9d95;
+  --green: #c7ff42;
+  --line: #292c27;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 6%; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 5;
+  background: rgba(9,10,9,.94); backdrop-filter: blur(12px);
+}
+.logo { font-size: 19px; font-weight: 900; letter-spacing: -1px; }
+.logo span { color: var(--green); }
+nav { display: flex; align-items: center; gap: 25px; }
+nav a { color: #c9cbc5; font-size: 13px; }
+nav a:hover { color: var(--green); }
+.admin-btn, .green-btn {
+  background: var(--green); color: #111; border: 0;
+  padding: 12px 17px; border-radius: 3px; font-weight: 800;
+}
+.hero { padding: 100px 6% 85px; }
+.eyebrow { color: var(--green); font-size: 12px; letter-spacing: 3px; }
+h1 {
+  font-size: clamp(48px, 10vw, 115px); line-height: .92;
+  letter-spacing: -6px; margin: 25px 0;
+}
+h1 span { color: var(--green); }
+.hero-bottom {
+  display: flex; justify-content: space-between; align-items: end;
+  gap: 30px; margin-top: 35px;
+}
+.hero-bottom p { color: var(--muted); line-height: 1.8; max-width: 430px; }
+.hero-label { font-size: 12px; color: var(--muted); text-align: right; }
+.section { padding: 35px 6% 90px; }
+.section-head {
+  display: flex; justify-content: space-between; align-items: end;
+  gap: 20px; margin-bottom: 28px;
+}
+h2 { font-size: clamp(30px, 5vw, 52px); margin: 8px 0; letter-spacing: -2px; }
+.count { color: var(--muted); font-size: 12px; }
+.filters { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 30px; }
+.filter {
+  background: transparent; border: 1px solid var(--line); color: #c7c9c2;
+  padding: 10px 15px; border-radius: 30px; font-size: 12px;
+}
+.filter.active, .filter:hover { background: var(--green); color: #111; border-color: var(--green); }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.project { min-width: 0; }
+.thumb {
+  width: 100%; aspect-ratio: 16/10; position: relative; overflow: hidden;
+  background: radial-gradient(ellipse at 70% 30%, #444b36, #191d17 48%, #080908);
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #22251f; cursor: pointer;
+}
+.thumb::before {
+  content: ""; position: absolute; width: 150px; height: 150px;
+  border: 1px solid rgba(199,255,66,.5); border-radius: 50%;
+  box-shadow: 0 0 50px rgba(199,255,66,.12), inset 0 0 35px rgba(199,255,66,.1);
+  transform: rotate(-25deg) scaleX(1.6);
+}
+.thumb::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 35%, rgba(199,255,66,.08), transparent 70%);
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+.play {
+  position: relative; z-index: 1; width: 52px; height: 52px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--green); color: #10110d; font-size: 19px;
+  opacity: .95; transition: transform .2s;
+}
+.project:hover .play { transform: scale(1.12); }
+.project-info { display: flex; justify-content: space-between; gap: 12px; padding-top: 14px; }
+.project-info h3 { font-size: 17px; margin: 0 0 7px; }
+.project-info p { font-size: 11px; color: var(--muted); margin: 0; }
+.project-tag { font-size: 10px; color: var(--green); white-space: nowrap; }
+.about {
+  padding: 75px 6%; background: var(--panel);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+}
+.about p { color: var(--muted); line-height: 1.9; }
+.skills { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+.skills span { border: 1px solid var(--line); padding: 10px 13px; font-size: 12px; }
+.contact { padding: 85px 6%; }
+.contact a { color: var(--green); }
+footer {
+  padding: 24px 6%; border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; gap: 15px;
+  color: var(--muted); font-size: 11px;
+}
+/* Admin panel */
+#adminPanel { display: none; padding: 35px 6% 70px; background: #151713; border-bottom: 1px solid var(--green); }
+#adminPanel h2 { font-size: 34px; }
+.admin-note { color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 700px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 850px; margin-top: 22px; }
+.form-grid label { display: block; font-size: 12px; color: #c5c8bf; }
+.form-grid input, .form-grid select, .form-grid textarea {
+  width: 100%; margin-top: 7px; padding: 12px;
+  color: white; background: #090a09; border: 1px solid #383c33; border-radius: 3px;
+}
+.form-grid textarea { min-height: 80px; resize: vertical; }
+.full { grid-column: 1 / -1; }
+.admin-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.secondary-btn { background: transparent; color: white; border: 1px solid #555; padding: 12px 16px; }
+.delete-btn { color: #ff8c8c; background: transparent; border: 1px solid #643737; padding: 7px 10px; }
+.modal {
+  display: none; position: fixed; inset: 0; z-index: 20; padding: 20px;
+  background: rgba(0,0,0,.92); align-items: center; justify-content: center;
+}
+.modal.open { display: flex; }
+.modal-box { width: min(950px, 100%); }
+.modal-top { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.modal-top button { background: none; border: 0; color: white; font-size: 30px; }
+#videoFrame { width: 100%; aspect-ratio: 16/9; border: 0; background: black; }
+#videoMessage { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.empty { color: var(--muted); padding: 40px 0; }
+@media(max-width:800px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  nav { gap: 12px; } nav a { font-size: 11px; }
+  h1 { letter-spacing: -3px; }
+}
+@media(max-width:540px) {
+  header { padding: 17px 5%; }
+  nav a { display: none; }
+  .hero { padding: 75px 5% 55px; }
+  .hero-bottom { align-items: start; flex-direction: column; }
+  .hero-label { text-align: left; }
+  .section, .contact { padding-left: 5%; padding-right: 5%; }
+  .grid { grid-template-columns: 1fr; gap: 28px; }
+  .about { grid-template-columns: 1fr; padding: 55px 5%; }
+  .form-grid { grid-template-columns: 1fr; }
+  .full { grid-column: auto; }
+  footer { padding: 20px 5%; flex-direction: column; }
+  .section-head { align-items: start; flex-direction: column; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <a class="logo" href="#">ZAID<span>.</span>BELIM</a>
+  <nav>
+    <a href="#work">WORK</a>
+    <a href="#about">ABOUT</a>
+    <a href="#contact">CONTACT</a>
+    <button class="admin-btn" onclick="toggleAdmin()">ADMIN ↗</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">VIDEO EDITOR / VFX ARTIST / CGI</div>
+  <h1>MAKING<br>IMAGINATION<br><span>VISIBLE.</span></h1>
+  <div class="hero-bottom">
+    <p>
+      Visual stories, cinematic edits and digital worlds.
+      A collection of creative work built frame by frame.
+    </p>
+    <div class="hero-label">INDEPENDENT CREATIVE<br>MUMBAI, INDIA</div>
+  </div>
+</section>
+
+<section id="adminPanel">
+  <div class="eyebrow">LOCAL DEMO CONTROLS</div>
+  <h2>Manage Projects</h2>
+  <p class="admin-note">
+    This is a local demo, not a secure online admin account.
+    Add a project using a direct video URL. Changes are saved in this browser only.
+    Do not enter passwords or confidential information here.
+  </p>
+  <form id="projectForm">
+    <div class="form-grid">
+      <label>Project title
+        <input id="title" required placeholder="e.g. Bombay After Dark">
+      </label>
+      <label>Category
+        <select id="category">
+          <option>ZEDITS</option>
+          <option>VFX</option>
+          <option>CGI</option>
+          <option>BOLLYWOOD</option>
+          <option>MAHARASHTRA</option>
+          <option>MEWAR</option>
+          <option>BHARAT</option>
+          <option>BOMBAY</option>
+          <option>OTHER</option>
+        </select>
+      </label>
+      <label class="full">Video URL (direct MP4, YouTube or Vimeo)
+        <input id="videoUrl" type="url" required placeholder="https://...">
+      </label>
+      <label class="full">Thumbnail image URL (optional)
+        <input id="imageUrl" type="url" placeholder="https://...jpg">
+      </label>
+      <label class="full">Description (optional)
+        <textarea id="description" placeholder="A few words about the project"></textarea>
+      </label>
+    </div>
+    <div class="admin-actions">
+      <button class="green-btn" type="submit">+ Add Project</button>
+      <button class="secondary-btn" type="button" onclick="exportProjects()">Export project data</button>
+      <button class="secondary-btn" type="button" onclick="toggleAdmin()">Close panel</button>
+    </div>
+  </form>
+  <p id="adminStatus" class="admin-note"></p>
+</section>
+
+<section class="section" id="work">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">SELECTED PROJECTS</div>
+      <h2>THE WORK<span style="color:var(--green)">.</span></h2>
+    </div>
+    <div class="count" id="projectCount">0 PROJECTS</div>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="projectGrid"></div>
+</section>
+
+<section class="about" id="about">
+  <div>
+    <div class="eyebrow">BEHIND THE FRAMES</div>
+    <h2>IDEAS INTO<br>IMPACT.</h2>
+  </div>
+  <div>
+    <p>
+      I'm Zaid Belim, a Mumbai-based creative working across video editing,
+      visual effects and CGI. I enjoy turning ideas into visual experiences
+      with detail, rhythm and a strong sense of atmosphere.
+    </p>
+    <div class="skills">
+      <span>VIDEO EDITING</span><span>VFX</span><span>CGI</span>
+      <span>PREMIERE PRO</span><span>AFTER EFFECTS</span><span>BLENDER</span>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="eyebrow">HAVE A PROJECT IN MIND?</div>
+  <h2>LET'S MAKE<br><span style="color:var(--green)">SOMETHING.</span></h2>
+  <p style="color:var(--muted)">For collaborations, freelance work and creative projects.</p>
+  <p>Email: <a id="emailLink" href="mailto:your-email@example.com">Add your email here</a></p>
+  <p>Instagram: <a href="https://www.instagram.com/" target="_blank" rel="noopener">Add your Instagram profile link</a></p>
+</section>
+
+<footer>
+  <span>© <span id="year"></span> ZAID BELIM</span>
+  <span>BUILT FOR THE LOVE OF VISUALS.</span>
+</footer>
+
+<div class="modal" id="videoModal" onclick="closeOnBackdrop(event)">
+  <div class="modal-box">
+    <div class="modal-top">
+      <strong id="modalTitle">PROJECT</strong>
+      <button onclick="closeVideo()" aria-label="Close video">×</button>
+    </div>
+    <iframe id="videoFrame" allow="autoplay; fullscreen; picture-in-picture"
+      allowfullscreen title="Project video" style="display:none"></iframe>
+    <video id="mp4Player" controls playsinline style="display:none;width:100%;background:#000;max-height:75vh"></video>
+    <p id="videoMessage"></p>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "zaid_belim_local_projects_v1";
+
+const starterProjects = [
+  { id:"demo1", title:"BOMBAY", category:"BOMBAY", description:"Urban visual story", video:"", image:"", demo:true },
+  { id:"demo2", title:"BHARAT", category:"BHARAT", description:"Culture and identity", video:"", image:"", demo:true },
+  { id:"demo3", title:"ZEDITS", category:"ZEDITS", description:"Creative edit showcase", video:"", image:"", demo:true },
+  { id:"demo4", title:"MAHARASHTRA", category:"MAHARASHTRA", description:"A visual journey", video:"", image:"", demo:true },
+  { id:"demo5", title:"MEWAR", category:"MEWAR", description:"A cinematic concept", video:"", image:"", demo:true },
+  { id:"demo6", title:"BOLLYWOOD", category:"BOLLYWOOD", description:"Motion and storytelling", video:"", image:"", demo:true }
+];
+
+let projects = loadProjects();
+let activeFilter = "ALL";
+
+function loadProjects() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved !== null) return JSON.parse(saved);
+  } catch (error) {
+    console.warn("Could not read saved projects.", error);
+  }
+  return starterProjects;
+}
+
+function saveProjects() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    return true;
+  } catch (error) {
+    document.getElementById("adminStatus").textContent =
+      "Could not save: browser storage may be full. Try a smaller thumbnail or export your data.";
+    return false;
+  }
+}
+
+function escapeHTML(value) {
+  return String(value || "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  })[char]);
+}
+
+function renderFilters() {
+  const categories = ["ALL", ...new Set(projects.map(p => p.category))];
+  document.getElementById("filters").innerHTML = categories.map(category =>
+    `<button class="filter ${activeFilter === category ? "active" : ""}"
+      onclick="setFilter('${escapeHTML(category)}')">${escapeHTML(category)}</button>`
+  ).join("");
+}
+
+function setFilter(category) {
+  activeFilter = category;
+  renderFilters();
+  renderProjects();
+}
+
+function renderProjects() {
+  const visible = activeFilter === "ALL"
+    ? projects : projects.filter(p => p.category === activeFilter);
+
+  document.getElementById("projectCount").textContent =
+    visible.length + (visible.length === 1 ? " PROJECT" : " PROJECTS");
+
+  const grid = document.getElementById("projectGrid");
+  if (!visible.length) {
+    grid.innerHTML = '<p class="empty">No projects in this category yet.</p>';
+    return;
+  }
+
+  grid.innerHTML = visible.map(p => `
+    <article class="project">
+      <div class="thumb" role="button" tabindex="0"
+        aria-label="Open ${escapeHTML(p.title)}"
+        onclick="openProject('${escapeHTML(p.id)}')"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProject('${escapeHTML(p.id)}')}">
+        ${p.image ? `<img src="${escapeHTML(p.image)}" alt="${escapeHTML(p.title)} thumbnail" loading="lazy" onerror="this.style.display='none'">` : ""}
+        <span class="play">▶</span>
+      </div>
+      <div class="project-info">
+        <div>
+          <h3>${escapeHTML(p.title)}</h3>
+          <p>${escapeHTML(p.description || "Creative project")}</p>
+        </div>
+        <span class="project-tag">${escapeHTML(p.category)}</span>
+      </div>
+    </article>
+  `).join("");
+}
+
+function toggleAdmin() {
+  const panel = document.getElementById("adminPanel");
+  panel.style.display = panel.style.display === "block" ? "none" : "block";
+  if (panel.style.display === "block") panel.scrollIntoView({ behavior:"smooth" });
+}
+
+document.getElementById("projectForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+
+  const video = document.getElementById("videoUrl").value.trim();
+  const image = document.getElementById("imageUrl").value.trim();
+
+  if (!isAllowedURL(video) || (image && !isAllowedURL(image))) {
+    document.getElementById("adminStatus").textContent =
+      "Please use valid HTTPS video and image links.";
+    return;
+  }
+
+  const project = {
+    id: "p" + Date.now(),
+    title: document.getElementById("title").value.trim(),
+    category: document.getElementById("category").value,
+    video,
+    image,
+    description: document.getElementById("description").value.trim(),
+    demo: false
+  };
+
+  projects.unshift(project);
+  if (!saveProjects()) {
+    projects.shift();
+    return;
+  }
+
+  activeFilter = "ALL";
+  renderFilters();
+  renderProjects();
+  this.reset();
+  document.getElementById("adminStatus").textContent =
+    "Project added in this browser. It is not uploaded to a public website.";
+});
+
+function isAllowedURL(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function getVideoSource(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname === "youtu.be") return "https://www.youtube-nocookie.com/embed/" + u.pathname.slice(1);
+    if (u.hostname.endsWith("youtube.com")) {
+      if (u.pathname === "/watch") return "https://www.youtube-nocookie.com/embed/" + u.searchParams.get("v");
+      if (u.pathname.startsWith("/embed/")) return url;
+      if (u.pathname.startsWith("/shorts/")) return "https://www.youtube-nocookie.com/embed/" + u.pathname.split("/")[2];
+    }
+    if (u.hostname.endsWith("vimeo.com")) {
+      const id = u.pathname.split("/").filter(Boolean).pop();
+      if (/^\d+$/.test(id)) return "https://player.vimeo.com/video/" + id;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function openProject(id) {
+  const p = projects.find(item => item.id === id);
+  if (!p) return;
+
+  document.getElementById("videoModal").classList.add("open");
+  document.getElementById("modalTitle").textContent = p.title;
+  const frame = document.getElementById("videoFrame");
+  const player = document.getElementById("mp4Player");
+  const message = document.getElementById("videoMessage");
+
+  frame.style.display = "none";
+  frame.src = "";
+  player.style.display = "none";
+  player.pause();
+  player.removeAttribute("src");
+  player.load();
+
+  if (!p.video) {
+    message.textContent = "This is a portfolio layout preview. Open ADMIN to add a real video URL for this project.";
+    return;
+  }
+
+  message.textContent = "";
+
+  const embed = getVideoSource(p.video);
+  if (embed) {
+    frame.src = embed;
+    frame.style.display = "block";
+  } else {
+    player.src = p.video;
+    player.style.display = "block";
+    player.onerror = () => {
+      message.textContent = "This video could not be played. Use a direct MP4 link or a supported YouTube/Vimeo link.";
+    };
+    player.play().catch(() => {});
+  }
+}
+
+function closeVideo() {
+  document.getElementById("videoModal").classList.remove("open");
+  document.getElementById("videoFrame").src = "";
+  const player = document.getElementById("mp4Player");
+  player.pause();
+  player.removeAttribute("src");
+  player.load();
+}
+
+function closeOnBackdrop(event) {
+  if (event.target.id === "videoModal") closeVideo();
+}
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeVideo();
+});
+
+function exportProjects() {
+  const blob = new Blob([JSON.stringify(projects, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "zaid-projects.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("year").textContent = new Date().getFullYear();
+renderFilters();
+renderProjects();
+</script>
+</body>
+</html>
