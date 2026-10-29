@@ -1,296 +1,487 @@
-const STORAGE_KEY = "zaidBelimProjects";
 
-const starterProjects = [
-  { id: "1", title: "ZEDITS", category: "ZEDITS", description: "Creative edit showcase", video: "", image: "" },
-  { id: "2", title: "BOMBAY", category: "BOMBAY", description: "Urban visual story", video: "", image: "" },
-  { id: "3", title: "BHARAT", category: "BHARAT", description: "Culture and identity", video: "", image: "" },
-  { id: "4", title: "MAHARASHTRA", category: "MAHARASHTRA", description: "A visual journey", video: "", image: "" },
-  { id: "5", title: "MEWAR", category: "MEWAR", description: "Cinematic storytelling", video: "", image: "" },
-  { id: "6", title: "BOLLYWOOD", category: "BOLLYWOOD", description: "Motion and visuals", video: "", image: "" }
+/*
+  ZAID BELIM PORTFOLIO
+  Frontend configuration
+
+  IMPORTANT:
+  - Use only the public/publishable Supabase key here.
+  - NEVER put a service_role key, R2 secret, or private API secret here.
+  - Configure the SQL security policies provided below before enabling admin.
+*/
+
+const CONFIG = {
+  SUPABASE_URL: "YOUR_SUPABASE_PROJECT_URL",
+  SUPABASE_ANON_KEY: "YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY",
+  CONTACT_EMAIL: "zaid@example.com",
+  INSTAGRAM_URL: "https://www.instagram.com/",
+  UPLOAD_API: "https://YOUR-CLOUDFLARE-WORKER-DOMAIN"
+};
+
+const hasSupabaseConfig =
+  CONFIG.SUPABASE_URL.startsWith("https://") &&
+  !CONFIG.SUPABASE_URL.includes("YOUR_") &&
+  CONFIG.SUPABASE_ANON_KEY.length > 20 &&
+  !CONFIG.SUPABASE_ANON_KEY.includes("YOUR_");
+
+const db = hasSupabaseConfig
+  ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY)
+  : null;
+
+const $ = (selector) => document.querySelector(selector);
+
+const grid = $("#projectGrid");
+const filters = $("#filters");
+const demoNote = $("#demoNote");
+const videoModal = $("#videoModal");
+const modalContent = $("#modalContent");
+const adminModal = $("#adminModal");
+const adminStatus = $("#adminStatus");
+const loginForm = $("#loginForm");
+const adminPanel = $("#adminPanel");
+const adminProjects = $("#adminProjects");
+const projectForm = $("#projectForm");
+
+let projects = [];
+let currentFilter = "All";
+let isAdmin = false;
+
+const demoProjects = [
+  {
+    id: "demo-1",
+    title: "After Hours — Visual Study",
+    category: "CGI",
+    year: 2026,
+    cover_url: "",
+    video_url: "",
+    published: true,
+    demo: true
+  },
+  {
+    id: "demo-2",
+    title: "Bombay in Motion",
+    category: "Film",
+    year: 2026,
+    cover_url: "",
+    video_url: "",
+    published: true,
+    demo: true
+  },
+  {
+    id: "demo-3",
+    title: "Beyond Reality",
+    category: "VFX",
+    year: 2026,
+    cover_url: "",
+    video_url: "",
+    published: true,
+    demo: true
+  }
 ];
 
-let projects = loadProjects();
-let activeFilter = "ALL";
-
-const grid = document.getElementById("projectGrid");
-const filters = document.getElementById("filters");
-const adminPanel = document.getElementById("adminPanel");
-const form = document.getElementById("projectForm");
-const message = document.getElementById("adminMessage");
-
-function loadProjects() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved === null ? starterProjects : JSON.parse(saved);
-  } catch {
-    return starterProjects;
-  }
-}
-
-function saveProjects() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-    return true;
-  } catch {
-    message.textContent = "Could not save projects. Export your data and try again.";
-    return false;
-  }
-}
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, character => ({
+function escapeHTML(value = "") {
+  return String(value).replace(/[&<>"']/g, (char) => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
+    "'": "&#039;"
+  })[char]);
 }
 
-function renderFilters() {
-  const categories = ["ALL", ...new Set(projects.map(p => p.category))];
+function safeHttpURL(value) {
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
 
-  filters.innerHTML = categories.map(category => `
-    <button
-      class="filter-button ${activeFilter === category ? "active" : ""}"
-      data-category="${escapeHTML(category)}">
-      ${escapeHTML(category)}
-    </button>
-  `).join("");
+function categoryMatches(project, filter) {
+  if (filter === "All") return true;
+  if (filter === "CGI") return project.category === "CGI";
+  if (filter === "Film") return ["Film", "Film & Edit"].includes(project.category);
+  return project.category === filter;
+}
+
+function categoryClass(category = "") {
+  if (category === "CGI") return "visual-three";
+  if (category === "Film" || category === "Film & Edit") return "visual-two";
+  return "";
 }
 
 function renderProjects() {
-  const visibleProjects = activeFilter === "ALL"
-    ? projects
-    : projects.filter(project => project.category === activeFilter);
+  const visible = projects.filter(project =>
+    project.published && categoryMatches(project, currentFilter)
+  );
 
-  document.getElementById("projectCount").textContent =
-    `${visibleProjects.length} PROJECT${visibleProjects.length === 1 ? "" : "S"}`;
-
-  if (visibleProjects.length === 0) {
-    grid.innerHTML = '<p class="empty-message">No projects in this category yet.</p>';
+  if (!visible.length) {
+    grid.innerHTML = `
+      <p class="small-muted">No projects in this category yet.</p>
+    `;
     return;
   }
 
-  grid.innerHTML = visibleProjects.map(project => `
-    <article class="project-card">
-      <button
-        class="project-thumbnail"
-        data-project-id="${escapeHTML(project.id)}"
-        aria-label="Play ${escapeHTML(project.title)}">
+  grid.innerHTML = visible.map((project, index) => {
+    const cover = safeHttpURL(project.cover_url);
+    const title = escapeHTML(project.title);
+    const category = escapeHTML(project.category);
+    const year = escapeHTML(project.year);
+    const video = safeHttpURL(project.video_url);
+    const visual = cover
+      ? `<img src="${escapeHTML(cover)}" alt="${title}" loading="lazy">`
+      : `<span class="visual-shape shape-red"></span>
+         <span class="visual-title">${title}</span>`;
 
-        ${project.image ? `
-          <img
-            src="${escapeHTML(project.image)}"
-            alt="${escapeHTML(project.title)} thumbnail"
-            loading="lazy">
-        ` : ""}
-
-        <span class="play-button">▶</span>
-      </button>
-
-      <div class="project-info">
-        <div>
-          <h3>${escapeHTML(project.title)}</h3>
-          <p>${escapeHTML(project.description || "Creative project")}</p>
+    return `
+      <article class="project-card ${index === 0 ? "project-featured" : ""}">
+        <button class="project-visual ${cover ? "" : "placeholder-visual " + categoryClass(project.category)}"
+          data-project-id="${escapeHTML(project.id)}"
+          aria-label="Open ${title}">
+          <span class="visual-number">${String(index + 1).padStart(2, "0")}</span>
+          ${visual}
+          <span class="visual-open">↗</span>
+        </button>
+        <div class="project-meta">
+          <div>
+            <h3>${title}</h3>
+            <p>${category.toUpperCase()} · ${year}</p>
+          </div>
+          <span class="project-category">${category}</span>
         </div>
-        <span class="project-category">${escapeHTML(project.category)}</span>
-      </div>
-    </article>
-  `).join("");
+      </article>
+    `;
+  }).join("");
+
+  grid.querySelectorAll("[data-project-id]").forEach(button => {
+    button.addEventListener("click", () => {
+      const project = projects.find(item => item.id === button.dataset.projectId);
+      if (project) openProject(project);
+    });
+  });
 }
 
-filters.addEventListener("click", event => {
-  const button = event.target.closest("[data-category]");
-  if (!button) return;
-
-  activeFilter = button.dataset.category;
-  renderFilters();
-  renderProjects();
-});
-
-grid.addEventListener("click", event => {
-  const button = event.target.closest("[data-project-id]");
-  if (!button) return;
-
-  openProject(button.dataset.projectId);
-});
-
-document.getElementById("adminToggle").addEventListener("click", () => {
-  adminPanel.hidden = !adminPanel.hidden;
-
-  if (!adminPanel.hidden) {
-    adminPanel.scrollIntoView({ behavior: "smooth" });
-  }
-});
-
-function validHttpsURL(value) {
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-form.addEventListener("submit", event => {
-  event.preventDefault();
-
-  const title = document.getElementById("projectTitle").value.trim();
-  const category = document.getElementById("projectCategory").value;
-  const video = document.getElementById("projectVideo").value.trim();
-  const image = document.getElementById("projectImage").value.trim();
-  const description = document.getElementById("projectDescription").value.trim();
-
-  if (!validHttpsURL(video) || (image && !validHttpsURL(image))) {
-    message.textContent = "Use valid HTTPS links for the video and thumbnail.";
+async function loadProjects() {
+  if (!db) {
+    projects = demoProjects;
+    demoNote.hidden = false;
+    renderProjects();
     return;
   }
 
-  const project = {
-    id: crypto.randomUUID
-      ? crypto.randomUUID()
-      : String(Date.now()),
-    title,
-    category,
-    video,
-    image,
-    description
-  };
+  const { data, error } = await db
+    .from("projects")
+    .select("id,title,category,year,cover_url,video_url,published")
+    .eq("published", true)
+    .order("created_at", { ascending: false });
 
-  projects.unshift(project);
-
-  if (!saveProjects()) {
-    projects.shift();
+  if (error) {
+    console.error(error);
+    demoNote.textContent =
+      "Could not load published projects. Check Supabase table and Row Level Security.";
+    demoNote.hidden = false;
     return;
   }
 
-  activeFilter = "ALL";
-  renderFilters();
+  projects = data || [];
+  demoNote.hidden = projects.length > 0;
   renderProjects();
-  form.reset();
-
-  message.textContent =
-    "Project added in this browser only. It is not yet published online.";
-});
-
-function getEmbedURL(value) {
-  try {
-    const url = new URL(value);
-    const host = url.hostname.toLowerCase();
-
-    if (host === "youtu.be") {
-      const id = url.pathname.slice(1);
-      return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
-    }
-
-    if (host === "youtube.com" || host.endsWith(".youtube.com")) {
-      if (url.pathname === "/watch") {
-        const id = url.searchParams.get("v");
-        return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
-      }
-
-      const match = url.pathname.match(/^\/(?:embed|shorts)\/([a-zA-Z0-9_-]+)/);
-      if (match) {
-        return `https://www.youtube-nocookie.com/embed/${match[1]}`;
-      }
-    }
-
-    if (host === "vimeo.com" || host.endsWith(".vimeo.com")) {
-      const match = url.pathname.match(/\/(\d+)\/?$/);
-      if (match) return `https://player.vimeo.com/video/${match[1]}`;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
 }
 
-function openProject(id) {
-  const project = projects.find(item => item.id === id);
-  if (!project) return;
+function openProject(project) {
+  const url = safeHttpURL(project.video_url);
+  if (!url) {
+    adminStatus.textContent = project.demo
+      ? "This is a design placeholder. Add a real project video URL in the admin setup."
+      : "No playable video URL has been added to this project yet.";
+    return;
+  }
 
-  const modal = document.getElementById("videoModal");
-  const frame = document.getElementById("videoFrame");
-  const player = document.getElementById("videoPlayer");
-  const videoMessage = document.getElementById("videoMessage");
+  modalContent.replaceChildren();
 
-  document.getElementById("modalTitle").textContent = project.title;
-
-  frame.hidden = true;
-  frame.src = "";
-
-  player.pause();
-  player.removeAttribute("src");
-  player.load();
-  player.hidden = true;
-
-  if (!project.video) {
-    videoMessage.textContent =
-      "Demo project. Add a real video URL using the Admin panel.";
+  let video;
+  if (/youtube\.com|youtu\.be|vimeo\.com/.test(url)) {
+    video = document.createElement("iframe");
+    video.src = getEmbedURL(url);
+    video.title = project.title;
+    video.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+    video.allowFullscreen = true;
   } else {
-    videoMessage.textContent = "";
+    video = document.createElement("video");
+    video.src = url;
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+  }
 
-    const embed = getEmbedURL(project.video);
+  modalContent.appendChild(video);
+  videoModal.classList.add("open");
+  videoModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
 
-    if (embed) {
-      frame.src = embed;
-      frame.hidden = false;
-    } else {
-      player.src = project.video;
-      player.hidden = false;
-      player.play().catch(() => {});
-      player.onerror = () => {
-        videoMessage.textContent =
-          "This video could not be played. Use a direct MP4 URL or supported YouTube/Vimeo link.";
-      };
+function getEmbedURL(rawURL) {
+  const url = new URL(rawURL);
+
+  if (url.hostname.includes("youtu.be")) {
+    return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(url.pathname.slice(1))}`;
+  }
+
+  if (url.hostname.includes("youtube.com")) {
+    if (url.pathname === "/watch") {
+      return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(url.searchParams.get("v") || "")}`;
+    }
+    if (url.pathname.startsWith("/embed/")) {
+      return `https://www.youtube-nocookie.com${url.pathname}`;
     }
   }
 
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  if (url.hostname.includes("vimeo.com")) {
+    const id = url.pathname.split("/").filter(Boolean).pop();
+    if (/^\d+$/.test(id || "")) return `https://player.vimeo.com/video/${id}`;
+  }
+
+  return rawURL;
 }
 
 function closeVideo() {
-  const modal = document.getElementById("videoModal");
-  const frame = document.getElementById("videoFrame");
-  const player = document.getElementById("videoPlayer");
-
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-
-  frame.src = "";
-  player.pause();
-  player.removeAttribute("src");
-  player.load();
+  videoModal.classList.remove("open");
+  videoModal.setAttribute("aria-hidden", "true");
+  modalContent.replaceChildren();
+  document.body.classList.remove("modal-open");
 }
 
-document.getElementById("closeModal").addEventListener("click", closeVideo);
+filters.addEventListener("click", event => {
+  const button = event.target.closest("[data-filter]");
+  if (!button) return;
 
-document.getElementById("videoModal").addEventListener("click", event => {
-  if (event.target.id === "videoModal") closeVideo();
+  currentFilter = button.dataset.filter;
+  filters.querySelectorAll(".filter").forEach(item =>
+    item.classList.toggle("active", item === button)
+  );
+  renderProjects();
+});
+
+$("#modalClose").addEventListener("click", closeVideo);
+videoModal.addEventListener("click", event => {
+  if (event.target === videoModal) closeVideo();
 });
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape") closeVideo();
+  if (event.key === "Escape") {
+    closeVideo();
+    closeAdmin();
+    $("#desktopNav")?.classList.remove("open");
+  }
 });
 
-document.getElementById("exportButton").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(projects, null, 2)], {
-    type: "application/json"
+$("#contactLink").href = `mailto:${CONFIG.CONTACT_EMAIL}`;
+$("#emailLink").href = `mailto:${CONFIG.CONTACT_EMAIL}`;
+$("#instagramLink").href = CONFIG.INSTAGRAM_URL;
+
+const desktopNav = document.querySelector(".desktop-nav");
+$("#menuBtn").addEventListener("click", () => {
+  desktopNav.classList.toggle("open");
+});
+desktopNav.querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", () => desktopNav.classList.remove("open"));
+});
+
+function openAdmin() {
+  adminModal.classList.add("open");
+  adminModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  adminStatus.textContent = db
+    ? ""
+    : "Backend not configured. Set up Supabase and its security policies before using admin.";
+}
+
+function closeAdmin() {
+  adminModal.classList.remove("open");
+  adminModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+}
+
+$("#adminOpen").addEventListener("click", openAdmin);
+$("#adminClose").addEventListener("click", closeAdmin);
+adminModal.addEventListener("click", event => {
+  if (event.target === adminModal) closeAdmin();
+});
+
+function showAdminState(signedIn) {
+  isAdmin = signedIn;
+  loginForm.hidden = signedIn;
+  adminPanel.hidden = !signedIn;
+}
+
+loginForm.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!db) {
+    adminStatus.textContent = "Supabase is not configured yet.";
+    return;
+  }
+
+  adminStatus.textContent = "Signing in…";
+  const email = $("#adminEmail").value.trim();
+  const password = $("#adminPassword").value;
+
+  const { error } = await db.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    adminStatus.textContent = "Sign-in failed. Check the account details and Supabase setup.";
+    return;
+  }
+
+  adminStatus.textContent = "Signed in.";
+  showAdminState(true);
+  await refreshAdminProjects();
+});
+
+$("#logoutBtn").addEventListener("click", async () => {
+  if (db) await db.auth.signOut();
+  showAdminState(false);
+  adminStatus.textContent = "Signed out.";
+});
+
+async function refreshAdminProjects() {
+  if (!db || !isAdmin) return;
+
+  const { data, error } = await db
+    .from("projects")
+    .select("id,title,category,year,published")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    adminStatus.textContent = "Unable to load projects. Check admin database policies.";
+    return;
+  }
+
+  adminProjects.innerHTML = (data || []).map(project => `
+    <div class="admin-project-row">
+      <span>${escapeHTML(project.title)} · ${project.published ? "PUBLISHED" : "DRAFT"}</span>
+      <span>
+        <button type="button" data-edit="${escapeHTML(project.id)}">EDIT</button>
+        <button type="button" data-delete="${escapeHTML(project.id)}">DELETE</button>
+      </span>
+    </div>
+  `).join("") || `<p class="small-muted">No projects yet.</p>`;
+
+  adminProjects.querySelectorAll("[data-edit]").forEach(button => {
+    button.addEventListener("click", () => editProject(button.dataset.edit));
   });
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  adminProjects.querySelectorAll("[data-delete]").forEach(button => {
+    button.addEventListener("click", () => deleteProject(button.dataset.delete));
+  });
+}
 
-  link.href = url;
-  link.download = "zaid-projects.json";
-  link.click();
+async function editProject(id) {
+  const project = projects.find(item => item.id === id);
+  if (!project) {
+    // Fetch unpublished projects too, since public project data only includes published items.
+    const { data, error } = await db.from("projects").select("*").eq("id", id).single();
+    if (error || !data) {
+      adminStatus.textContent = "Could not open that project.";
+      return;
+    }
+    fillProjectForm(data);
+    return;
+  }
+  fillProjectForm(project);
+}
 
-  URL.revokeObjectURL(url);
+function fillProjectForm(project) {
+  $("#projectId").value = project.id;
+  $("#projectTitle").value = project.title || "";
+  $("#projectCategory").value = project.category || "VFX";
+  $("#projectYear").value = project.year || new Date().getFullYear();
+  $("#projectCover").value = project.cover_url || "";
+  $("#projectVideo").value = project.video_url || "";
+  $("#projectPublished").checked = !!project.published;
+  adminStatus.textContent = "Editing project. Save to apply changes.";
+  projectForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+projectForm.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!db || !isAdmin) {
+    adminStatus.textContent = "Please sign in with the authorised admin account first.";
+    return;
+  }
+
+  const id = $("#projectId").value;
+  const title = $("#projectTitle").value.trim();
+  const coverURL = $("#projectCover").value.trim();
+  const videoURL = $("#projectVideo").value.trim();
+
+  if (coverURL && !safeHttpURL(coverURL)) {
+    adminStatus.textContent = "Cover image must use a valid HTTP or HTTPS URL.";
+    return;
+  }
+  if (videoURL && !safeHttpURL(videoURL)) {
+    adminStatus.textContent = "Video must use a valid HTTP or HTTPS URL.";
+    return;
+  }
+
+  const record = {
+    title,
+    category: $("#projectCategory").value,
+    year: Number($("#projectYear").value),
+    cover_url: coverURL || null,
+    video_url: videoURL || null,
+    published: $("#projectPublished").checked
+  };
+
+  adminStatus.textContent = "Saving project…";
+
+  const result = id
+    ? await db.from("projects").update(record).eq("id", id).select().single()
+    : await db.from("projects").insert(record).select().single();
+
+  if (result.error) {
+    console.error(result.error);
+    adminStatus.textContent = "Save failed. Check admin Row Level Security policies.";
+    return;
+  }
+
+  projectForm.reset();
+  $("#projectId").value = "";
+  $("#projectYear").value = new Date().getFullYear();
+  $("#projectPublished").checked = true;
+
+  adminStatus.textContent = "Project saved.";
+  await Promise.all([loadProjects(), refreshAdminProjects()]);
 });
 
-document.getElementById("year").textContent = new Date().getFullYear();
+async function deleteProject(id) {
+  if (!db || !isAdmin) return;
+  if (!confirm("Delete this project entry? This does not delete its video file from R2.")) return;
 
-renderFilters();
-renderProjects();
+  const { error } = await db.from("projects").delete().eq("id", id);
+
+  if (error) {
+    adminStatus.textContent = "Delete failed. Check database permissions.";
+    return;
+  }
+
+  adminStatus.textContent = "Project entry deleted.";
+  await Promise.all([loadProjects(), refreshAdminProjects()]);
+}
+
+// Restore an existing authenticated session after page refresh.
+async function initAdmin() {
+  if (!db) return;
+  const { data } = await db.auth.getSession();
+  showAdminState(!!data.session);
+  if (data.session) await refreshAdminProjects();
+
+  db.auth.onAuthStateChange((_event, session) => {
+    showAdminState(!!session);
+    if (session) refreshAdminProjects();
+  });
+}
+
+loadProjects();
+initAdmin();
