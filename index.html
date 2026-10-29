@@ -1,172 +1,120 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>ZAID BELIM — Creative Portfolio</title>
-  <meta name="description" content="Zaid Belim — Video Editor, VFX Artist and CGI Artist. Explore selected creative projects.">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <title>Zaid Belim — Visual Artist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
-
   <header class="navbar">
-    <a href="#" class="logo">ZAID<span>.</span>BELIM</a>
-
-    <nav>
-      <a href="#work">Work</a>
+    <a href="#home" class="logo">ZAID BELIM<span>®</span></a>
+    <nav id="nav">
+      <a href="#home">Home</a>
       <a href="#about">About</a>
+      <a href="#work">Work</a>
       <a href="#contact">Contact</a>
-      <button id="adminToggle" class="admin-button">Admin ↗</button>
     </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <span></span>
+    </button>
+    <button class="menu" id="menu" aria-label="Open menu">☰</button>
   </header>
 
   <main>
-    <section class="hero">
-      <p class="eyebrow">VIDEO EDITOR / VFX ARTIST / CGI</p>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <p class="overline">VIDEO EDITOR · VFX ARTIST · CGI</p>
+        <h1>ZAID <span>BELIM</span></h1>
+      </div>
 
-      <h1>MAKING<br>IMAGINATION<br><span>VISIBLE.</span></h1>
+      <!-- Replace zaid.jpg with Zaid's best portrait photo -->
+      <img class="portrait" src="zaid.jpg" alt="Zaid Belim portrait">
+
+      <div class="hero-caption">
+        <p>Visuals that<br>make you feel.</p>
+        <p class="right-caption">Independent Creative<br>Artist · Mumbai, India</p>
+      </div>
 
       <div class="hero-bottom">
-        <p>
-          Visual stories. Cinematic edits. Digital worlds.
-          Creative work, built frame by frame.
-        </p>
-        <p class="location">INDEPENDENT CREATIVE<br>MUMBAI, INDIA</p>
+        <a href="#work" class="discover">EXPLORE MY WORK <span>↓</span></a>
+        <span class="edition">PORTFOLIO / 2026</span>
       </div>
     </section>
 
-    <section id="adminPanel" class="admin-panel" hidden>
-      <p class="eyebrow">DEMO ADMIN</p>
-      <h2>Manage Projects</h2>
-      <p class="notice">
-        This is a local demo, not a secure online admin system.
-        Projects added here are saved only in this browser.
+    <section class="intro" id="about">
+      <p class="label">01 — ABOUT</p>
+      <h2>I TURN IDEAS INTO<br><span>VISUAL EXPERIENCES.</span></h2>
+      <p class="intro-text">
+        Video editing, visual effects and CGI. Every frame has a purpose.
+        Every project is a chance to create something unforgettable.
       </p>
-
-      <form id="projectForm" class="project-form">
-        <label>
-          Project name
-          <input id="projectTitle" type="text" required placeholder="Project name">
-        </label>
-
-        <label>
-          Category
-          <select id="projectCategory">
-            <option value="ZEDITS">ZEDITS</option>
-            <option value="VFX">VFX</option>
-            <option value="CGI">CGI</option>
-            <option value="BOMBAY">BOMBAY</option>
-            <option value="MAHARASHTRA">MAHARASHTRA</option>
-            <option value="MEWAR">MEWAR</option>
-            <option value="BHARAT">BHARAT</option>
-            <option value="BOLLYWOOD">BOLLYWOOD</option>
-            <option value="OTHER">OTHER</option>
-          </select>
-        </label>
-
-        <label class="full">
-          Video URL
-          <input id="projectVideo" type="url" placeholder="https://..." required>
-        </label>
-
-        <label class="full">
-          Thumbnail URL (optional)
-          <input id="projectImage" type="url" placeholder="https://...">
-        </label>
-
-        <label class="full">
-          Short description (optional)
-          <textarea id="projectDescription" placeholder="About this project"></textarea>
-        </label>
-
-        <div class="form-actions full">
-          <button class="primary-button" type="submit">Add Project</button>
-          <button class="secondary-button" id="exportButton" type="button">
-            Export Projects
-          </button>
-        </div>
-      </form>
-
-      <p id="adminMessage" class="notice" aria-live="polite"></p>
     </section>
 
-    <section id="work" class="section">
-      <div class="section-heading">
+    <section class="work" id="work">
+      <div class="section-head">
         <div>
-          <p class="eyebrow">SELECTED PROJECTS</p>
-          <h2>THE WORK<span>.</span></h2>
+          <p class="label">02 — SELECTED PROJECTS</p>
+          <h2>THE WORK<span>®</span></h2>
         </div>
-        <p id="projectCount" class="project-count">0 PROJECTS</p>
+        <p>FILMS / VFX / CGI / COMMERCIALS</p>
       </div>
 
-      <div id="filters" class="filters"></div>
-      <div id="projectGrid" class="project-grid"></div>
+      <div class="filters">
+        <button class="active" data-filter="all">ALL</button>
+        <button data-filter="film">FILM & EDIT</button>
+        <button data-filter="vfx">VFX</button>
+        <button data-filter="cgi">CGI</button>
+      </div>
+
+      <div class="projects" id="projects">
+        <article class="project" data-category="film">
+          <div class="project-image image-one">
+            <span>01</span><b>01 / FILM</b>
+          </div>
+          <h3>Bombay in Motion</h3>
+          <p>FILM EDITING · 2026</p>
+        </article>
+        <article class="project" data-category="vfx">
+          <div class="project-image image-two">
+            <span>02</span><b>02 / VFX</b>
+          </div>
+          <h3>Beyond Reality</h3>
+          <p>VISUAL EFFECTS · 2026</p>
+        </article>
+        <article class="project" data-category="cgi">
+          <div class="project-image image-three">
+            <span>03</span><b>03 / CGI</b>
+          </div>
+          <h3>Digital Dimensions</h3>
+          <p>CGI · 3D DESIGN · 2026</p>
+        </article>
+      </div>
+      <p class="notice">Sample project cards — replace with Zaid's actual work.</p>
     </section>
 
-    <section id="about" class="about-section">
-      <div>
-        <p class="eyebrow">BEHIND THE FRAMES</p>
-        <h2>IDEAS INTO<br>IMPACT.</h2>
-      </div>
-
-      <div>
-        <p>
-          I'm Zaid Belim, a Mumbai-based creative working across video editing,
-          visual effects and CGI. I turn ideas into visual experiences through
-          detail, motion and storytelling.
-        </p>
-
-        <div class="skills">
-          <span>VIDEO EDITING</span>
-          <span>VFX</span>
-          <span>CGI</span>
-          <span>PREMIERE PRO</span>
-          <span>AFTER EFFECTS</span>
-          <span>BLENDER</span>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact" class="contact-section">
-      <p class="eyebrow">HAVE A PROJECT IN MIND?</p>
-      <h2>LET'S MAKE<br><span>SOMETHING.</span></h2>
-      <p>For collaborations, freelance work and creative projects.</p>
-
-      <!-- Replace these with Zaid's real contact details -->
-      <a href="mailto:your-email@example.com">YOUR EMAIL ↗</a>
-      <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
-        INSTAGRAM ↗
+    <section class="contact" id="contact">
+      <p class="label">03 — LET'S CONNECT</p>
+      <h2>HAVE A STORY?<br><span>LET'S CREATE IT.</span></h2>
+      <a href="mailto:zaid@example.com" class="contact-link">
+        GET IN TOUCH <span>↗</span>
       </a>
     </section>
   </main>
 
   <footer>
-    <p>© <span id="year"></span> ZAID BELIM</p>
-    <p>BUILT FOR THE LOVE OF VISUALS.</p>
-  </footer>
-
-  <div id="videoModal" class="video-modal" aria-hidden="true">
-    <div class="video-dialog">
-      <div class="modal-heading">
-        <h3 id="modalTitle">PROJECT</h3>
-        <button id="closeModal" aria-label="Close video">×</button>
-      </div>
-
-      <iframe
-        id="videoFrame"
-        title="Project video"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowfullscreen
-        hidden>
-      </iframe>
-
-      <video id="videoPlayer" controls playsinline hidden></video>
-      <p id="videoMessage"></p>
+    <a href="#home" class="logo">ZAID BELIM<span>®</span></a>
+    <p>INDEPENDENT CREATIVE ARTIST · MUMBAI</p>
+    <div>
+      <a href="https://instagram.com/" target="_blank" rel="noreferrer">INSTAGRAM ↗</a>
+      <a href="mailto:zaid@example.com">EMAIL ↗</a>
     </div>
-  </div>
-
-  <script src="script.js"></script>
+    <small>© 2026 ZAID BELIM. ALL RIGHTS RESERVED.</small>
+  </footer>
 </body>
 </html>
